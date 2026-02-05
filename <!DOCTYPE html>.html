@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Recipe Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fafafa;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .search-filter-section {
+            background: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .categories {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .category-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .subcategories {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .subcategories.active {
+            display: flex;
+        }
+
+        .subcategory-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d0d0d0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .subcategory-btn:hover {
+            border-color: #764ba2;
+            color: #764ba2;
+        }
+
+        .subcategory-btn.active {
+            background: #764ba2;
+            color: white;
+            border-color: transparent;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+            min-height: 200px;
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .recipe-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .recipe-content {
+            padding: 1.5rem;
+        }
+
+        .recipe-category {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .recipe-subcategory {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            background: #e8e8e8;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #764ba2;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .recipe-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 400;
+        }
+
+        .recipe-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #999;
+            font-size: 1.2rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        .modal-header {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+            font-weight: 400;
+        }
+
+        .modal-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-category {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .modal-subcategory {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: #764ba2;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: white;
+            font-weight: 500;
+        }
+
+        .modal-description {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .modal-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .meta-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .meta-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 0.3rem;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .modal-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 2rem 0;
+        }
+
+        .modal-note {
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .modal-section {
+            margin-bottom: 2rem;
+        }
+
+        .modal-section-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .ingredients-list, .preparation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ingredients-list li {
+            padding: 0.6rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ingredients-list li:last-child {
+            border-bottom: none;
+        }
+
+        .ingredients-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0.5rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .preparation-list li {
+            padding: 0.8rem 0;
+            padding-left: 2.5rem;
+            position: relative;
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .preparation-list li::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            width: 1.8rem;
+            height: 1.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 1rem;
+            }
+
+            .modal-header {
+                height: 200px;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Athamma's Recipes</h1>
+            <p class="tagline">Dive into the culinary heritage of generations with Athamma's Recipes. Our collection features cherished recipes passed down from my mother-in-law, each telling a story of love and tradition.</p>
+        </div>
+    </header>
+
+    <div class="search-filter-section">
+        <div class="container">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search recipes...">
+            </div>
+            <div class="categories" id="categories"></div>
+            <div class="subcategories" id="subcategories"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="recipes-grid" id="recipesGrid">
+            <p style="text-align: center; padding: 2rem; color: #999;">Loading recipes...</p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img id="modalImage" src="" alt="" class="modal-image">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h2 id="modalTitle" class="modal-title"></h2>
+                <div id="modalBadges" class="modal-badges"></div>
+                <p id="modalDescription" class="modal-description"></p>
+                
+                <div class="modal-meta">
+                    <div class="meta-item">
+                        <div class="meta-icon">⏱️</div>
+                        <div class="meta-label">Cooking Time</div>
+                        <div id="modalTime" class="meta-value"></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-icon">🍽️</div>
+                        <div class="meta-label">Servings</div>
+                        <div id="modalServings" class="meta-value"></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-icon">📊</div>
+                        <div class="meta-label">Difficulty</div>
+                        <div id="modalDifficulty" class="meta-value"></div>
+                    </div>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                <div id="modalIngredients"></div>
+                <div id="modalPreparation"></div>
+
+                <div class="modal-note">
+                    <strong>Note:</strong> This is a traditional recipe passed down through generations. Feel free to adjust spices and ingredients to your taste!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 My Recipe Collection. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        console.log('Script starting...');
+        
+        const recipes = [
+            // BREAKFAST RECIPES - ALPHABETICAL ORDER
+            {
+                id: 1,
+                title: "Aapam",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Soft, fluffy South Indian pancakes with crispy edges.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 2,
+                title: "Adai",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Protein-rich lentil pancake made with mixed dals.",
+                time: "35 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400"
+            },
+            {
+                id: 3,
+                title: "Bisibelebath",
+                category: "Breakfast",
+                subcategory: null,
+                description: "One-pot rice and lentil dish with vegetables and spices.",
+                time: "45 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400"
+            },
+            {
+                id: 4,
+                title: "Biyyam Nuka Upma-Pudhina Chutney",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Rice rava upma served with refreshing mint chutney.",
+                time: "25 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400"
+            },
+            {
+                id: 5,
+                title: "Borugulu Dosa",
+                category: "Breakfast",
+                subcategory: "Dosa",
+                description: "Crispy lentil dosa with holes.",
+                time: "35 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400"
+            },
+            {
+                id: 6,
+                title: "Dibba Rotti",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Thick rice and lentil pancake cooked in a pan.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 7,
+                title: "Gudi Dosa",
+                category: "Breakfast",
+                subcategory: "Dosa",
+                description: "Soft, spongy dosa.",
+                time: "25 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1694159449671-16a1d977991d?w=400"
+            },
+            {
+                id: 8,
+                title: "Idly Vada Sambar",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Classic South Indian combo of steamed idly, crispy vada with sambar.",
+                time: "40 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 9,
+                title: "Janthikalu",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Crispy, spiral-shaped savory snack made from rice flour.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400"
+            },
+            {
+                id: 10,
+                title: "Kaaram Dosa",
+                category: "Breakfast",
+                subcategory: "Dosa",
+                description: "Spicy red chutney dosa.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400"
+            },
+            {
+                id: 11,
+                title: "Kanchi Idly",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Soft steamed rice cakes, a staple breakfast item.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 12,
+                title: "Masala Dosa",
+                category: "Breakfast",
+                subcategory: "Dosa",
+                description: "Classic crispy dosa with potato filling.",
+                time: "40 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1694159449671-16a1d977991d?w=400"
+            },
+            {
+                id: 13,
+                title: "Pachi Pindi Poori",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Fried bread made with raw rice flour.",
+                time: "25 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400"
+            },
+            {
+                id: 14,
+                title: "Pachipindi Rotti",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Raw rice flour flatbread with spices and vegetables.",
+                time: "20 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 15,
+                title: "Pesarattu",
+                category: "Breakfast",
+                subcategory: "Dosa",
+                description: "Green gram dosa, protein-rich.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 16,
+                title: "Pongal",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Comforting rice and lentil dish tempered with spices.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400"
+            },
+            {
+                id: 17,
+                title: "Poori-Bombay Chutney",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Fluffy fried bread served with spicy Bombay-style chutney.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400"
+            },
+            {
+                id: 18,
+                title: "Ragi Rotti",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Nutritious finger millet flatbread.",
+                time: "20 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 19,
+                title: "Rava Dosa",
+                category: "Breakfast",
+                subcategory: "Dosa",
+                description: "Instant crispy semolina dosa.",
+                time: "20 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 20,
+                title: "Sojji",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Sweet semolina pudding with ghee and dry fruits.",
+                time: "20 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400"
+            },
+            {
+                id: 21,
+                title: "Sorakay Rotti",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Bottle gourd flatbread, healthy and delicious.",
+                time: "25 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400"
+            },
+            {
+                id: 22,
+                title: "Thappeta Billalu",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Traditional Andhra-style mixed lentil pancakes.",
+                time: "35 mins",
+                servings: "4 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400"
+            },
+            {
+                id: 23,
+                title: "Uggani",
+                category: "Breakfast",
+                subcategory: null,
+                description: "Puffed rice dish with peanuts, lemon, and spices.",
+                time: "15 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400"
+            },
+
+            // LUNCH - Rasam (Pappu Charu already present and set to Rasam)
+            {
+                id: 29,
+                title: "Pappu Charu",
+                category: "Lunch",
+                subcategory: "Rasam",
+                description: "Traditional Andhra-style dal soup with black pepper and cumin, a comforting and flavorful dish.",
+                time: "30 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=400",
+                ingredients: [
+                    "Toor dal - 2 Tsp",
+                    "Black pepper - 1 Tsp",
+                    "Cumin seeds - 1/2 Tsp",
+                    "Tomatoes - 2",
+                    "Green chillies - 4-5",
+                    "For tempering: Mustard seeds, Jeera, Red chillies, Garlic, Curry leaves, Asafoetida, Turmeric",
+                    "Tamarind (small piece)",
+                    "Salt to taste",
+                    "Oil and ghee"
+                ],
+                preparation: [
+                    "Wash the toor dal thoroughly. Place it in a pressure cooker with a pinch of turmeric and enough water and cook for 3–4 whistles.",
+                    "In a small mixer jar, grind black pepper and cumin seeds.",
+                    "Heat oil and a little ghee in a deep pan. Add mustard, jeera, dried red chillies, garlic, curry leaves, and a pinch of asafoetida for tempering.",
+                    "Add the chopped tomatoes and slit green chillies, tamarind and salt to the pan and saute well.",
+                    "Add the mashed cooked dal, the ground pepper-cumin powder, and additional water.",
+                    "Simmer on low heat for 4–5 minutes and serve hot with rice."
+                ]
+            },
+
+            // Pappu subcategory items (Lunch → Pappu) - alphabetical order
+            {
+                id: 30,
+                title: "Bottle Gourd Pappu",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 31,
+                title: "Brinjal Pappu",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Medium",
+                image: ""
+            },
+            {
+                id: 32,
+                title: "Chow Chow Pappu",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 33,
+                title: "Cucumber Pappu",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 34,
+                title: "Menthi Aaku Pappu (Fenugreek Leaves Pappu)",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Medium",
+                image: ""
+            },
+            {
+                id: 35,
+                title: "Palak Pappu (Spinach Pappu)",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 36,
+                title: "Raw Mango Pappu",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Medium",
+                image: ""
+            },
+            {
+                id: 37,
+                title: "Tomato Pappu",
+                category: "Lunch",
+                subcategory: "Pappu",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+
+            // Rasam section items (Lunch → Rasam)
+            {
+                id: 38,
+                title: "Tomato Charu",
+                category: "Lunch",
+                subcategory: "Rasam",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 39,
+                title: "Miriyala Charu",
+                category: "Lunch",
+                subcategory: "Rasam",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 40,
+                title: "Mysore Charu",
+                category: "Lunch",
+                subcategory: "Rasam",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 41,
+                title: "Oliga Charu",
+                category: "Lunch",
+                subcategory: "Rasam",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+            {
+                id: 42,
+                title: "Lemon Charu",
+                category: "Lunch",
+                subcategory: "Rasam",
+                description: "Details coming soon.",
+                time: "",
+                servings: "",
+                difficulty: "Easy",
+                image: ""
+            },
+
+            // OTHER CATEGORIES (keep existing entries)
+            {
+                id: 24,
+                title: "Banana Bread",
+                category: "Easy to make",
+                subcategory: null,
+                description: "Moist banana bread.",
+                time: "1 hour",
+                servings: "8 slices",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1617196035092-151a9f3d71c7?w=400"
+            },
+            {
+                id: 25,
+                title: "Chocolate Chip Cookies",
+                category: "Snacks",
+                subcategory: null,
+                description: "Soft, chewy cookies.",
+                time: "30 mins",
+                servings: "24 cookies",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=400"
+            },
+            {
+                id: 26,
+                title: "Chicken Curry",
+                category: "Lunch",
+                subcategory: null,
+                description: "Aromatic Indian curry.",
+                time: "45 mins",
+                servings: "6 servings",
+                difficulty: "Medium",
+                image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400"
+            },
+            {
+                id: 27,
+                title: "Creamy Tomato Pasta",
+                category: "Dinner",
+                subcategory: null,
+                description: "Rich tomato pasta.",
+                time: "25 mins",
+                servings: "4 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400"
+            },
+            {
+                id: 28,
+                title: "Strawberry Smoothie",
+                category: "Snacks",
+                subcategory: null,
+                description: "Refreshing smoothie.",
+                time: "5 mins",
+                servings: "2 servings",
+                difficulty: "Easy",
+                image: "https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=400"
+            }
+        ];
+
+        console.log('Recipes loaded:', recipes.length);
+
+        let currentFilter = 'All';
+        let currentSubcategory = null;
+        let searchTerm = '';
+
+        const categories = ['All', 'Breakfast', 'Lunch', 'Snacks', 'Easy to make', 'Pickles'];
+        
+        // Update subcategories map
+        const subcategoryMap = {
+            'Breakfast': new Set(['Dosa']),
+            'Lunch': new Set(['Pappu', 'Rasam', 'Sambar', 'Pachallu', 'Thalimpu/Fry', 'Mixed Rice'])
+        };
+
+        console.log('Categories:', categories);
+
+        function renderCategories() {
+            console.log('Rendering categories...');
+            const categoriesDiv = document.getElementById('categories');
+            if (!categoriesDiv) {
+                console.error('Categories div not found!');
+                return;
+            }
+            
+            categoriesDiv.innerHTML = categories.map(cat => 
+                `<button class="category-btn ${cat === currentFilter ? 'active' : ''}" 
+                        onclick="filterByCategory('${cat}')">${cat}</button>`
+            ).join('');
+            
+            renderSubcategories();
+        }
+
+        function renderSubcategories() {
+            const subcategoriesDiv = document.getElementById('subcategories');
+            if (!subcategoriesDiv) return;
+            
+            if (currentFilter !== 'All' && subcategoryMap[currentFilter]) {
+                const subcats = Array.from(subcategoryMap[currentFilter]);
+                subcategoriesDiv.innerHTML = `
+                    <button class="subcategory-btn ${currentSubcategory === null ? 'active' : ''}" 
+                            onclick="filterBySubcategory(null)">All ${currentFilter}</button>
+                    ${subcats.map(subcat => 
+                        `<button class="subcategory-btn ${currentSubcategory === subcat ? 'active' : ''}" 
+                                onclick="filterBySubcategory('${subcat}')">${subcat}</button>`
+                    ).join('')}
+                `;
+                subcategoriesDiv.classList.add('active');
+            } else {
+                subcategoriesDiv.classList.remove('active');
+                currentSubcategory = null;
+            }
+        }
+
+        function getFilteredRecipes() {
+            return recipes.filter(recipe => {
+                const matchesCategory = currentFilter === 'All' || recipe.category === currentFilter;
+                const matchesSubcategory = currentSubcategory === null || recipe.subcategory === currentSubcategory;
+                const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchesCategory && matchesSubcategory && matchesSearch;
+            });
+        }
+
+        function openRecipeModal(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+
+            document.getElementById('modalImage').src = recipe.image;
+            document.getElementById('modalTitle').textContent = recipe.title;
+            document.getElementById('modalDescription').textContent = recipe.description;
+            document.getElementById('modalTime').textContent = recipe.time;
+            document.getElementById('modalServings').textContent = recipe.servings;
+            document.getElementById('modalDifficulty').textContent = recipe.difficulty;
+
+            const badgesHtml = `
+                <span class="modal-category">${recipe.category}</span>
+                ${recipe.subcategory ? `<span class="modal-subcategory">${recipe.subcategory}</span>` : ''}
+            `;
+            document.getElementById('modalBadges').innerHTML = badgesHtml;
+
+            // Display ingredients if available
+            const ingredientsDiv = document.getElementById('modalIngredients');
+            if (recipe.ingredients && recipe.ingredients.length > 0) {
+                ingredientsDiv.innerHTML = `
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">Ingredients</h3>
+                        <ul class="ingredients-list">
+                            ${recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                ingredientsDiv.innerHTML = '';
+            }
+
+            // Display preparation steps if available
+            const preparationDiv = document.getElementById('modalPreparation');
+            if (recipe.preparation && recipe.preparation.length > 0) {
+                preparationDiv.innerHTML = `
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">Preparation</h3>
+                        <ul class="preparation-list">
+                            ${recipe.preparation.map((step, index) => 
+                                `<li data-step="${index + 1}">${step}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                preparationDiv.innerHTML = '';
+            }
+
+            document.getElementById('recipeModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('recipeModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('recipeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        function renderRecipes() {
+            console.log('Rendering recipes...');
+            const grid = document.getElementById('recipesGrid');
+            if (!grid) {
+                console.error('Recipes grid not found!');
+                return;
+            }
+            
+            const filteredRecipes = getFilteredRecipes();
+            console.log('Filtered recipes count:', filteredRecipes.length);
+
+            if (filteredRecipes.length === 0) {
+                grid.innerHTML = '<div class="no-results">No recipes found. Try a different search or category.</div>';
+                return;
+            }
+
+            grid.innerHTML = filteredRecipes.map(recipe => `
+                <div class="recipe-card" onclick="openRecipeModal(${recipe.id})">
+                    <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image" 
+                         onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+                    <div class="recipe-content">
+                        <span class="recipe-category">${recipe.category}</span>
+                        ${recipe.subcategory ? `<span class="recipe-subcategory">${recipe.subcategory}</span>` : ''}
+                        <h3 class="recipe-title">${recipe.title}</h3>
+                        <p class="recipe-description">${recipe.description}</p>
+                        <div class="recipe-meta">
+                            <span>⏱️ ${recipe.time}</span>
+                            <span>🍽️ ${recipe.servings}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            console.log('Recipes rendered successfully');
+        }
+
+        function filterByCategory(category) {
+            console.log('Filtering by category:', category);
+            currentFilter = category;
+            currentSubcategory = null;
+            renderCategories();
+            renderRecipes();
+        }
+
+        function filterBySubcategory(subcategory) {
+            console.log('Filtering by subcategory:', subcategory);
+            currentSubcategory = subcategory;
+            renderSubcategories();
+            renderRecipes();
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                console.log('Searching for:', searchTerm);
+                renderRecipes();
+            });
+        }
+
+        console.log('Initializing...');
+        renderCategories();
+        renderRecipes();
+        console.log('Initialization complete');
+    </script>
+</body>
+</html>
